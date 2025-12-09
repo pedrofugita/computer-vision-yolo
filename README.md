@@ -5,49 +5,83 @@
 ![OpenCV](https://img.shields.io/badge/Library-OpenCV-red?style=for-the-badge&logo=opencv&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-PoC-orange?style=for-the-badge)
 
-## 📌 Project Overview
-This project consists of a computer vision pipeline developed to perform **real-time object detection** in video streams. Leveraging the power of the **YOLOv8 (You Only Look Once)** architecture, the system is capable of identifying and classifying objects with high inference speed and accuracy.
+## 📌 Executive Summary
+This repository presents a real-time object detection pipeline leveraging Ultralytics YOLOv8, designed as a Proof of Concept (PoC) for automated monitoring solutions in industrial, retail, and smart-city environments.
 
-This implementation serves as a **Proof of Concept (PoC)** for automated monitoring systems, applicable in scenarios such as industrial safety, pedestrian traffic analysis, and perimeter surveillance.
+The system processes video streams frame-by-frame and outputs live detections with bounding boxes, classes, and confidence scores.
 
----
+![Cronoanálise](media/video_planta.png)
+![Frame 2](media/rastro_pessoa.png)
+![Frame 2](media/rastro_pessoa2.png)
 
-## ⚙️ The Problem & Solution
-**The Challenge:**
-Manual monitoring of video footage for security or operational metrics (like counting people or vehicles) is inefficient, prone to human error, and not scalable for large operations.
-
-**The Solution:**
-An automated detection system that:
-1.  **Ingests** raw video footage.
-2.  **Processes** frames using a pre-trained Neural Network (YOLOv8 Nano).
-3.  **Outputs** visual analytics with bounding boxes and class confidence scores in real-time.
 
 ---
 
-## 🚀 Key Features
-* **SOTA Architecture:** Utilizes Ultralytics YOLOv8 for optimal speed/accuracy trade-off.
-* **Video Inference:** Capable of processing `.mp4` streams frame-by-frame.
-* **Confidence Thresholding:** Configured with a `0.5` confidence score to filter out false positives, ensuring cleaner detection results.
-* **Cloud Integration:** Developed using Google Colab with Google Drive mounting for efficient data handling.
+## 🧠 Technical Overview
+### 🎯 Objective
+
+Develop a lightweight, fast, and reliable real-time object detection pipeline suitable for:
+
+* Industrial operational monitoring
+* Safety system automation (PPE, restricted areas)
+* Retail analytics
+* Traffic and pedestrian flow measurements
+
+### 🏗️ System Architecture
+```scss
+┌─────────────────────┐
+│     Video Input     │  (MP4, Webcam, IP Camera)
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Frame Preprocessing│  (OpenCV)
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│    YOLOv8 Engine    │  (ultralytics)
+│  • Object Detection │
+│  • NMS Filtering    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Post-processing    │
+│ • Bounding Boxes    │
+│ • Confidence Scores │
+│ • Class Labels      │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Visualization Layer │  (OpenCV imshow, or Streamlit)
+└─────────────────────┘
+```
 
 ---
 
-## 🛠️ Tech Stack
-* **Language:** Python
-* **Core Library:** `ultralytics` (YOLOv8)
-* **Image Processing:** OpenCV (`cv2`)
-* **Environment:** Jupyter Notebook / Google Colab
+## ⚙️ Technical Specifications
+Model
+* Architecture: YOLOv8-Nano
+* Size: ~6 MB
+* FPS (Colab T4 GPU): ~75 FPS
+* FPS (CPU i7 7th Gen – seu caso): ~5–10 FPS
+
+Libraries
+* ultralytics
+* opencv-python
+* numpy
+* Python 3.8+
+
+Environment
+* Google Colab (PoC phase)
+* Local CPU inference supported
 
 ---
 
-## 📊 How It Works (Logic)
-The script follows a standard ETL (Extract, Transform, Load) pattern for unstructured data:
-
-1.  **Environment Setup:** Installs dependencies and mounts cloud storage.
-2.  **Model Loading:** Initializes the `yolov8n.pt` (Nano) weights for lightweight processing.
-3.  **Inference Loop:** Runs the prediction method on the source video with `show=True` to visualize results in real-time.
-
-### Core Logic Snippet
+## 🧪 Code Implementation
+### 🔧 Core Inference Snippet
 ```python
 from ultralytics import YOLO
 
@@ -55,21 +89,64 @@ from ultralytics import YOLO
 model = YOLO("yolov8n.pt")
 
 # Run inference on video source
-# conf=0.5 ensures only detections with >50% confidence are shown
-results = model.predict(source='video_path.mp4', show=True, conf=0.5)
+results = model.predict(
+    source="video_path.mp4",
+    conf=0.5,          # Minimum confidence threshold
+    show=True          # Real-time visualization
+)
+```
 
-📈 Potential Applications
-Although implemented as a study, this logic is the foundation for:
+### 📊 Performance & Metrics
+| Metric                | Value (YOLOv8n) |
+| --------------------- | --------------- |
+| mAP 50                | ~37%            |
+| Model Size            | 6.2 MB          |
+| Inference Speed (CPU) | 5–10 FPS        |
+| Inference Speed (GPU) | 70+ FPS         |
+| Recommended Use       | Real-time PoC   |
 
-Retail: Counting customers in a store to analyze peak hours.
+---
 
-Industry 4.0: Detecting workers entering dangerous zones (Safety).
+## 🏭 Potential Real-World Applications
+Industry 4.0
+* Worker detection in hazardous areas
+* Monitoring of operational flows
+* Tracking unauthorized personnel
 
-Smart Cities: Traffic flow analysis and congestion detection.
+Retail
+* Customer counting
+* Heat maps for store optimization
 
-🔜 Future Improvements
-[ ] Implement a counter to track the total number of unique objects.
+Smart Cities
+* Vehicle and pedestrian flow
+* Traffic optimization
+* Incident detection
 
-[ ] Export detection data (timestamps and classes) to a SQL database.
+Security
+* Perimeter surveillance
+* Intrusion detection
+* Automated alerting
 
-[ ] Deploy the model to an edge device (e.g., Raspberry Pi) for on-site processing
+---
+
+## 🔜 Future Improvements
+* Implement object tracking (ByteTrack / DeepSORT)
+* Generate analytics dashboards (Streamlit / Dash)
+* Export detections to a SQL/PostgreSQL database
+* Edge deployment on Raspberry Pi + Coral TPU
+* Integrate MQTT for industrial automation use-cases
+* Save annotated output video automatically
+
+## 🧑‍💼 Professional Notes
+
+This PoC serves as the foundation for:
+* Scalable real-time computer vision systems
+* Cloud processing pipelines
+* Industrial safety automation
+* Low-latency monitoring platforms
+
+It demonstrates proficiency in:
+* Computer Vision Engineering
+* Edge AI model deployment
+* Deep learning inference optimization
+* Python + OpenCV + YOLO workflows
